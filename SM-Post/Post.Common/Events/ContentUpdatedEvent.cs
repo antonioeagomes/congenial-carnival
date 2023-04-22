@@ -4,7 +4,7 @@ namespace Post.Common.Events;
 
 public class ContentUpdatedEvent : BaseEvent
 {
-    public string? Content { get; set; }
+    public string Content { get; set; }
     public ContentUpdatedEvent() : base(nameof(ContentUpdatedEvent))
     {
     }

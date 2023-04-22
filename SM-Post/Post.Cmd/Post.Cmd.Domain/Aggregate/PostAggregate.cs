@@ -10,8 +10,8 @@ namespace Post.Cmd.Domain.Aggregate;
 public class PostAggregate : AggregateRoot
 {
     private bool _active;
-    private string? _author;
-    private readonly Dictionary<Guid, Tuple<string?, string?>> _comments = new();
+    private string _author;
+    private readonly Dictionary<Guid, Tuple<string, string>> _comments = new();
 
     public bool Active
     {
@@ -120,7 +120,7 @@ public class PostAggregate : AggregateRoot
     public void Apply(CommentAddedEvent e)
     {
         _id = e.Id;
-        _comments.Add(e.CommentId, new Tuple<string?, string?>(e.Comment, e.Username));
+        _comments.Add(e.CommentId, new Tuple<string, string>(e.Comment, e.Username));
     }
 
     public void EditComment(Guid commentId, string comment, string username)
@@ -149,7 +149,7 @@ public class PostAggregate : AggregateRoot
     public void Apply(CommentUpdatedEvent e)
     {
         _id = e.Id;
-        _comments[e.CommentId] = new Tuple<string?, string?>(e.Comment, e.Username);
+        _comments[e.CommentId] = new Tuple<string, string>(e.Comment, e.Username);
     }
 
     public void RemoveComment(Guid commentId, string username)
