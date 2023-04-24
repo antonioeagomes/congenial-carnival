@@ -3,6 +3,7 @@ using CQRS.Core.Domain;
 using CQRS.Core.Events;
 using CQRS.Core.Exceptions;
 using CQRS.Core.Infra;
+using CQRS.Core.Producers;
 using Post.Cmd.Domain.Aggregate;
 
 namespace Post.Cmd.Infra.Stores;
@@ -11,10 +12,12 @@ public class EventStore : IEventStore
 {
 
     private readonly IEventStoreRepository _eventStoreRepository;
+    private readonly IEventProducer _eventProducer;
 
-    public EventStore(IEventStoreRepository eventStoreRepostiroty)
+    public EventStore(IEventStoreRepository eventStoreRepostiroty, IEventProducer eventProducer)
     {
         _eventStoreRepository = eventStoreRepostiroty;
+        _eventProducer = eventProducer;
     }
 
     public async Task<List<BaseEvent>> GetEventAsync(Guid aggregateId)
@@ -28,6 +31,7 @@ public class EventStore : IEventStore
 
     public async Task SaveEventAsync(Guid aggregateId, IEnumerable<BaseEvent> events, int exprectedVersion)
     {
+        var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC");        
         var eventStream = await _eventStoreRepository.FindByAggregateId(aggregateId);
 
         if (exprectedVersion != -1 && eventStream[^1].Version != exprectedVersion)
@@ -35,11 +39,11 @@ public class EventStore : IEventStore
 
         var version = exprectedVersion;
 
-        foreach (var item in events)
+        foreach (var @event in events)
         {
             version++;
-            item.Version = version;
-            var eventType = item.GetType().Name;
+            @event.Version = version;
+            var eventType = @event.GetType().Name;
             var eventModel = new EventModel
             {
                 AggregateIdentifier = aggregateId,
@@ -47,10 +51,13 @@ public class EventStore : IEventStore
                 AggregateType = nameof(PostAggregate),
                 Version = version,
                 EventType = eventType,
-                EventData = item
+                EventData = @event
             };
 
-            await _eventStoreRepository.SaveAsync(eventModel);
+            await _eventStoreRepository.SaveAsync(eventModel);            
+
+            await _eventProducer.ProduceAsync(topic, @event);
+
         }
 
         
