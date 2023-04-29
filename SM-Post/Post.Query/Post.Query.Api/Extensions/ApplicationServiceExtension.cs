@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Confluent.Kafka;
+using CQRS.Core.Consumers;
 using Microsoft.EntityFrameworkCore;
 using Post.Query.Domain.Repositories;
+using Post.Query.Infra.Consumers;
 using Post.Query.Infra.DataAccess;
 using Post.Query.Infra.Handlers;
 using Post.Query.Infra.Repositories;
@@ -28,8 +31,15 @@ namespace Post.Query.Api.Extensions
         {
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
-            services.AddScoped<IEventHandler, Infra.Handlers.EventHandler>();           
+            services.AddScoped<IEventHandler, Infra.Handlers.EventHandler>();
+            services.AddScoped<IEventConsumer, EventConsumer>();
 
+            return services;
+        }
+
+        public static IServiceCollection ConsumerConfig(this IServiceCollection services, IConfiguration config)
+        {
+            services.Configure<ConsumerConfig>(config.GetSection(nameof(ConsumerConfig)));
             return services;
         }
     }
