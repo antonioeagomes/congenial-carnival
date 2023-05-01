@@ -1,9 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Post.Query.Api.Extensions;
-using Post.Query.Domain.Repositories;
 using Post.Query.Infra.Consumers;
-using Post.Query.Infra.DataAccess;
-using Post.Query.Infra.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

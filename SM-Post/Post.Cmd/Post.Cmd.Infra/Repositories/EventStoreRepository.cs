@@ -15,7 +15,7 @@ public class EventStoreRepository : IEventStoreRepository
         var mongoClient = new MongoClient(config.Value.ConnectionString);
         var mongoDatabase = mongoClient.GetDatabase(config.Value.Database);
 
-        _eventStore = mongoDatabase.GetCollection<EventModel>(config.Value.Collection);
+        _eventStore = mongoDatabase.GetCollection<EventModel>(config.Value?.Collection);
     }
 
     public async Task<List<EventModel>> FindByAggregateId(Guid aggregateId)
