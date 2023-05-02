@@ -4,10 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using CQRS.Core.Consumers;
+using CQRS.Core.Infra;
 using Microsoft.EntityFrameworkCore;
+using Post.Query.Api.Queries;
+using Post.Query.Domain.Entities;
 using Post.Query.Domain.Repositories;
 using Post.Query.Infra.Consumers;
 using Post.Query.Infra.DataAccess;
+using Post.Query.Infra.Dispatchers;
 using Post.Query.Infra.Handlers;
 using Post.Query.Infra.Repositories;
 
@@ -31,6 +35,7 @@ namespace Post.Query.Api.Extensions
         {
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<IQueryHandler, QueryHandler>();
             services.AddScoped<IEventHandler, Infra.Handlers.EventHandler>();
             services.AddScoped<IEventConsumer, EventConsumer>();
 
@@ -42,5 +47,21 @@ namespace Post.Query.Api.Extensions
             services.Configure<ConsumerConfig>(config.GetSection(nameof(ConsumerConfig)));
             return services;
         }
+
+        public static IServiceCollection RegisterQueryHandlers(this IServiceCollection services)
+    {
+        // Register Command handlers
+        var queryHandler = services.BuildServiceProvider().GetRequiredService<IQueryHandler>();
+        var dispatcher = new QueryDispatcher();
+        dispatcher.RegisterHandler<FindAllPostsQuery>(queryHandler.HandleAsync);
+        dispatcher.RegisterHandler<FindCommentedPostsQuery>(queryHandler.HandleAsync);
+        dispatcher.RegisterHandler<FindLikedPostQuery>(queryHandler.HandleAsync);
+        dispatcher.RegisterHandler<FindPostByAuthorQuery>(queryHandler.HandleAsync);
+        dispatcher.RegisterHandler<FindPostByIdQuery>(queryHandler.HandleAsync);
+
+        services.AddSingleton<IQueryDispatcher<PostEntity>>(_ => dispatcher);
+
+        return services;
+    }
     }
 }
