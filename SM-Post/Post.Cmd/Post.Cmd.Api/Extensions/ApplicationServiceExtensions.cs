@@ -29,6 +29,7 @@ public static class ApplicationServiceExtensions
         dispatcher.RegisterHandler<LikePostCommand>(commandHandler.HandleAsync);
         dispatcher.RegisterHandler<NewPostCommand>(commandHandler.HandleAsync);
         dispatcher.RegisterHandler<RemoveCommentCommand>(commandHandler.HandleAsync);
+        dispatcher.RegisterHandler<RestoreReadDbCommand>(commandHandler.HandleAsync);
 
         services.AddSingleton<ICommandDispatcher>(_ => dispatcher);
 

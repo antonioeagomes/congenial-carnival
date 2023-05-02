@@ -20,6 +20,16 @@ public class EventStore : IEventStore
         _eventProducer = eventProducer;
     }
 
+    public async Task<List<Guid>> GetAllAggregateIdAsync()
+    {
+        var eventStream = await _eventStoreRepository.FindAllAsync();
+
+        if (eventStream == null || !eventStream.Any())
+            throw new AggregateNotFoundException("Incorrect ID");
+
+        return eventStream.Select(e => e.AggregateIdentifier).Distinct().ToList();
+    }
+
     public async Task<List<BaseEvent>> GetEventAsync(Guid aggregateId)
     {
         var eventStream = await _eventStoreRepository.FindByAggregateId(aggregateId);

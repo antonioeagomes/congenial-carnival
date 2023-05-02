@@ -108,5 +108,22 @@ namespace Post.Cmd.Api.Controllers
             }
         }
 
+        [HttpPost("restore")]
+        public async Task<ActionResult> RestoreReadDB()
+        {
+            try
+            {
+                await _commandDispatcher.SendAsync(new RestoreReadDbCommand());
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+
+                _logger.LogError(ex, "Error to restore the read db");
+
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }
